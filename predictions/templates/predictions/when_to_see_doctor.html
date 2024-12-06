@@ -1,0 +1,41 @@
+{% extends 'predictions/base.html' %} 
+{% load static %}
+
+{% block title %}When to See a Doctor - {{ condition }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-lg overflow-hidden">
+                <div class="card-header bg-primary text-white p-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-user-md me-2"></i>When to See a Doctor for {{ condition }}
+                    </h2>
+                </div>
+                <div class="card-body p-5">
+                    <p class="lead mb-4">It's important to consult a healthcare professional if you experience any of the following:</p>
+                    <ul class="list-group list-group-flush">
+                        {% for sign in warning_signs %}
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle text-warning me-3"></i>
+                            {{ sign }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="alert alert-danger mt-4" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        If you're experiencing severe symptoms or have concerns about your skin condition, don't hesitate to seek medical attention immediately.
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <a href="{% url 'result_list' %}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Result
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

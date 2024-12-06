@@ -1,0 +1,130 @@
+{% extends 'predictions/base.html' %} 
+{% load static %}
+
+{% block title %}SkinScan AI - Analysis Result{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow-lg border-0 rounded-lg overflow-hidden">
+                    <div class="card-header bg-primary text-white p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2 class="mb-0">
+                                <i class="fas fa-microscope me-2"></i>Analysis Results
+                            </h2>
+                            <span class="badge bg-light text-primary fs-6">
+                                {{ result.confidence|floatformat:2 }}% Confidence
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body p-5">
+                        <div class="row">
+                            <div class="col-md-6 mb-4 mb-md-0">
+                                <div class="analysis-image-container">
+                                    <div class="position-relative">
+                                        {% if result.image %}
+                                            <img src="{{ result.image.url }}" alt="Analyzed Image" 
+                                                 class="img-fluid rounded-lg shadow-sm w-100 mb-3"
+                                                 style="max-height: 400px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="no-image-placeholder rounded-lg bg-light d-flex align-items-center justify-content-center"
+                                                 style="height: 400px;">
+                                                <i class="fas fa-image fa-3x text-muted"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div class="position-absolute top-0 end-0 m-3">
+                                            <span class="badge bg-primary">
+                                                {{ result.predicted_class }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="diagnosis-container bg-light p-4 rounded-lg h-100">
+                                    <h3 class="mb-4 text-primary">
+                                        <i class="fas fa-stethoscope me-2"></i>Diagnosis & Treatment
+                                    </h3>
+                                    
+                                    <div class="mb-4">
+                                        <h5 class="text-dark">
+                                            <i class="fas fa-info-circle me-2"></i>Description
+                                        </h5>
+                                        <p class="text-muted">{{ result.diagnosis }}</p>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <h5 class="text-dark">
+                                            <i class="fas fa-medkit me-2"></i>Treatment
+                                        </h5>
+                                        <p class="text-muted">{{ result.treatment }}</p>
+                                    </div>
+
+                                    <div class="alert alert-warning" role="alert">
+                                        <h6 class="alert-heading">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>Important Note
+                                        </h6>
+                                        <p class="mb-0 small">This AI-powered analysis is not a substitute for professional medical advice. Please consult with a healthcare provider for an accurate diagnosis.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'upload_image' %}" class="btn btn-primary">
+                                <i class="fas fa-upload me-2"></i>Analyze Another Image
+                            </a>
+                            <div>
+                                <a href="{% url 'result_edit' result.pk %}" class="btn btn-warning me-2">
+                                    <i class="fas fa-edit me-2"></i>Edit Result
+                                </a>
+                                <a href="{% url 'result_delete' result.pk %}" class="btn btn-danger">
+                                    <i class="fas fa-trash-alt me-2"></i>Delete Result
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-light py-5 mt-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Related Information</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Common Symptoms</h5>
+                        <p class="card-text">Learn about common symptoms associated with {{ result.predicted_class }}.</p>
+                        <a href="{% url 'common_symptoms' result.predicted_class %}" class="btn btn-outline-primary">Read More</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Prevention Tips</h5>
+                        <p class="card-text">Discover ways to prevent {{ result.predicted_class }} and maintain healthy skin.</p>
+                        <a href="{% url 'prevention_tips' result.predicted_class %}" class="btn btn-outline-primary">Read More</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">When to See a Doctor</h5>
+                        <p class="card-text">Understand when it's crucial to consult a healthcare professional about your skin condition.</p>
+                        <a href="{% url 'when_to_see_doctor' result.predicted_class %}" class="btn btn-outline-primary">Read More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

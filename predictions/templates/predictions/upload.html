@@ -1,0 +1,122 @@
+{% extends 'predictions/base.html' %}
+{% load static %}
+
+{% block title %}SkinScan AI - Upload Image{% endblock %}
+
+{% block content %}
+<section class="upload-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-lg border-0 rounded-lg overflow-hidden" data-aos="fade-up">
+                    <div class="card-header bg-primary text-white p-4">
+                        <h2 class="mb-0 text-center">
+                            <i class="fas fa-upload me-2"></i>Upload Image for Analysis
+                        </h2>
+                    </div>
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <img src="{% static 'images/upload-illustration.svg' %}" alt="Upload Illustration" class="img-fluid mb-3 floating" style="max-width: 200px;">
+                            <p class="lead">Upload a clear, well-lit image of the affected skin area for the most accurate results.</p>
+                        </div>
+                        <form method="post" enctype="multipart/form-data" id="uploadForm">
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label for="image-upload" class="form-label">Choose an image of your skin condition:</label>
+                                <div class="custom-file-upload">
+                                    <input type="file" id="image-upload" name="image" accept="image/*" required class="form-control" onchange="previewImage(this);">
+                                    <label for="image-upload" class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-cloud-upload-alt me-2"></i>Select Image
+                                    </label>
+                                </div>
+                            </div>
+                            <div id="imagePreview" class="mb-4 text-center" style="display: none;">
+                                <img id="preview" src="#" alt="Image Preview" class="img-fluid rounded shadow-sm" style="max-height: 300px;">
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-microscope me-2"></i>Analyze Image
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="mt-5" data-aos="fade-up">
+                    <h3 class="text-center mb-4">How It Works</h3>
+                    <div class="row justify-content-center">
+                        <div class="col-md-4 mb-4">
+                            <div class="process-card text-center h-100 p-4">
+                                <div class="process-icon mb-3">
+                                    <i class="fas fa-upload"></i>
+                                </div>
+                                <h5>Upload</h5>
+                                <p class="small text-muted">Upload your skin image</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="process-card text-center h-100 p-4">
+                                <div class="process-icon mb-3">
+                                    <i class="fas fa-cogs"></i>
+                                </div>
+                                <h5>Analyze</h5>
+                                <p class="small text-muted">AI processes the image</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="process-card text-center h-100 p-4">
+                                <div class="process-icon mb-3">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                                <h5>Results</h5>
+                                <p class="small text-muted">Get detailed analysis</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% block extra_js %}
+<script>
+function previewImage(input) {
+    var preview = document.getElementById('preview');
+    var previewContainer = document.getElementById('imagePreview');
+    
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            previewContainer.style.display = 'block';
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.src = '';
+        previewContainer.style.display = 'none';
+    }
+}
+
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    var fileInput = document.getElementById('image-upload');
+    if (fileInput.files.length === 0) {
+        alert('Please select an image to upload.');
+        return;
+    }
+    
+    var submitButton = this.querySelector('button[type="submit"]');
+    var originalText = submitButton.innerHTML;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Analyzing...';
+    submitButton.disabled = true;
+    
+    this.submit();
+});
+</script>
+{% endblock %}
+{% endblock %}
+

@@ -1,0 +1,149 @@
+{% extends 'predictions/base.html' %} 
+{% load static %}
+
+{% block title %}SkinScan AI - Analysis Results{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 rounded-lg overflow-hidden" data-aos="fade-up">
+                <div class="card-header bg-primary text-white p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Analysis Results
+                        </h2>
+                        <div class="d-flex gap-2">
+                            <div class="input-group">
+                                <input type="text" id="searchInput" class="form-control" placeholder="Search results...">
+                                <button class="btn btn-light" type="button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="resultsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Predicted Class</th>
+                                    <th>Confidence</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in results %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if result.image %}
+                                                <img src="{{ result.image.url }}" alt="" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="rounded-circle bg-light me-2" style="width: 40px; height: 40px;"></div>
+                                            {% endif %}
+                                            {{ result.predicted_class }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 6px; width: 100px;">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ result.confidence }}%"></div>
+                                        </div>
+                                        <small class="text-muted">{{ result.confidence|floatformat:2 }}%</small>
+                                    </td>
+                                    <td>{{ result.created_at|date:"F d, Y H:i" }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{% url 'result_detail' result.pk %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'result_edit' result.pk %}" class="btn btn-sm btn-outline-warning">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'result_delete' result.pk %}" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                                            <p>No results found.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if results.has_other_pages %}
+                    <nav aria-label="Results pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if results.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ results.previous_page_number }}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            {% for num in results.paginator.page_range %}
+                                {% if results.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                                {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if results.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ results.next_page_number }}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    const searchText = this.value.toLowerCase();
+    const table = document.getElementById('resultsTable');
+    const rows = table.getElementsByTagName('tr');
+
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        let found = false;
+
+        for (let j = 0; j < cells.length; j++) {
+            const cell = cells[j];
+            if (cell.textContent.toLowerCase().indexOf(searchText) > -1) {
+                found = true;
+                break;
+            }
+        }
+
+        row.style.display = found ? '' : 'none';
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

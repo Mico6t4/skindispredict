@@ -1,0 +1,156 @@
+{% extends 'predictions/base.html' %} 
+{% load static %}
+
+{% block title %}SkinScan AI - Edit Analysis Result{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5 bg-gradient-primary-to-secondary">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-lg border-0 rounded-lg overflow-hidden">
+                    <div class="card-header bg-primary text-white p-4">
+                        <h2 class="mb-0 text-center">
+                            <i class="fas fa-edit me-2"></i>Edit Analysis Result
+                        </h2>
+                    </div>
+                    <div class="card-body p-5">
+                        <form method="post" enctype="multipart/form-data" id="editForm">
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label class="form-label">Current Image:</label>
+                                <div class="position-relative mb-3">
+                                    {% if result.image %}
+                                        <div class="image-preview-container" style="max-height: 300px; overflow: hidden;">
+                                            <img 
+                                                src="{{ result.image.url }}" 
+                                                alt="Current Image"
+                                                class="img-fluid rounded-lg shadow-sm w-100"
+                                                style="object-fit: contain; height: 300px; width: 100%;"
+                                                id="currentImage"
+                                            >
+                                        </div>
+                                    {% else %}
+                                        <div class="no-image-placeholder rounded-lg bg-light d-flex align-items-center justify-content-center"
+                                             style="height: 300px;">
+                                            <i class="fas fa-image fa-3x text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="new_image" class="form-label">Upload New Image:</label>
+                                    <div class="input-group">
+                                        <input type="file" class="form-control" id="new_image" name="image" accept="image/*" onchange="previewImage(this)">
+                                        <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('new_image').value = ''">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <small class="text-muted">Upload a new image to update the analysis.</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Current Prediction:</label>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-primary me-2">{{ result.predicted_class }}</span>
+                                    <span class="text-muted">({{ result.confidence|floatformat:2 }}% Confidence)</span>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Uploading a new image will automatically update the prediction, diagnosis, and treatment.
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save me-2"></i><span>Save Changes</span>
+                                </button>
+                                <a href="{% url 'result_detail' result.pk %}" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function previewImage(input) {
+    const currentImage = document.getElementById('currentImage');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            currentImage.src = e.target.result;
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+document.getElementById('editForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const fileInput = document.getElementById('new_image');
+    
+    if (fileInput.files.length === 0) {
+        alert('Please select a new image to update the analysis.');
+        return;
+    }
+
+    const form = this;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalText = submitButton.innerHTML;
+    
+    try {
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+        submitButton.disabled = true;
+
+        const formData = new FormData(form);
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        });
+
+        if (response.ok) {
+            // Show success message
+            const successAlert = document.createElement('div');
+            successAlert.className = 'alert alert-success alert-dismissible fade show mt-3';
+            successAlert.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>Changes saved successfully!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            form.insertAdjacentElement('beforebegin', successAlert);
+
+            // Redirect after a short delay
+            setTimeout(() => {
+                window.location.href = "{% url 'result_detail' result.pk %}";
+            }, 1500);
+        } else {
+            throw new Error('Failed to save changes');
+        }
+    } catch (error) {
+        const errorAlert = document.createElement('div');
+        errorAlert.className = 'alert alert-danger alert-dismissible fade show mt-3';
+        errorAlert.innerHTML = `
+            <i class="fas fa-exclamation-circle me-2"></i>Failed to save changes. Please try again.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        form.insertAdjacentElement('beforebegin', errorAlert);
+    } finally {
+        submitButton.innerHTML = originalText;
+        submitButton.disabled = false;
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}
+
